@@ -1,0 +1,31 @@
+# firewall - Firewall boot script
+#
+# iptables provides a firewall to the system.
+
+description	"Firewall Control Service"
+
+start on filesystem or runlevel [2345]
+stop on runlevel [!2345]
+
+umask 077
+
+# unsure if script leaks stderr and confuses things in conjunction with 'console log'
+console log
+
+pre-start script
+    test -x /sbin/iptables-restore || { stop; exit 0; }
+    test -d /etc/fw/ || { stop; exit 0; }
+    test -e /etc/fw/default.rules || test -e /etc/fw/backup.rules || { stop; exit 0; }
+end script
+
+start script
+        exec /etc/init.d/fw start >> /dev/null ; wait ; || true
+end script
+
+stop script
+        exec /etc/init.d/fw stop >> /dev/null ; wait ; || true
+end script
+
+status script
+        exec /etc/init.d/fw status >> /dev/null ; wait ; || true
+end script
